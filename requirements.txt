@@ -1,0 +1,8 @@
+# --- Database Connectivity ---
+pyodbc          # Essential for Microsoft SQL Server
+sqlalchemy      # Makes database work much easier in Python
+
+# --- Data Processing ---
+pandas
+openpyxl        # For Excel files
+python-dotenv   # To keep your local DB password secret

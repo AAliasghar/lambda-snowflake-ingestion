@@ -200,23 +200,6 @@ def load_to_sql_server(df, table_name):
     finally:
         conn.close()
 
-# def run_local_sql_scripts(params):
-#     """Replaces GitHub logic. Reads SQL from local folder."""
-#     conn = get_sql_server_connection()
-#     cursor = conn.cursor()
-
-#     for file_name in os.listdir(LOCAL_SQL_FOLDER):
-#         if file_name.endswith('.sql'):
-#             with open(os.path.join(LOCAL_SQL_FOLDER, file_name), 'r') as f:
-#                 sql = f.read()
-#                 # Your existing logic for parameter replacement
-#                 sql = sql.replace('"+context.invoice_month+"', params["invoice_month"])
-                
-#                 print(f"📜 Executing {file_name}...")
-#                 cursor.execute(sql)
-#                 conn.commit()
-#     conn.close()
-
 # --- MAIN EXECUTION---
 if __name__ == "__main__":
     

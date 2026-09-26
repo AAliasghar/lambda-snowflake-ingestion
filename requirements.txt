@@ -1,8 +1,14 @@
-# --- Database Connectivity ---
-pyodbc          # Essential for Microsoft SQL Server
-sqlalchemy      # Makes database work much easier in Python
+# --- Cloud & Data Services ---
+boto3>=1.34.0
+snowflake-connector-python>=3.10.0
 
-# --- Data Processing ---
-pandas
-openpyxl        # For Excel files
-python-dotenv   # To keep your local DB password secret
+# --- DataProcessing ---
+pandas>=2.0.0
+openpyxl>=3.9.0
+python-dotenv>=1.0.0
+
+# --- AWS / Lambda ---
+# boto3 is included above
+
+# --- Testing ---
+pytest>=8.0.0

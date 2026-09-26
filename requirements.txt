@@ -1,14 +1,15 @@
-# --- Cloud & Data Services ---
-boto3>=1.34.0
+# Local ETL legacy helper
+pyodbc
+sqlalchemy
+
+# AWS / Snowflake / Lambda
+boto3
 snowflake-connector-python>=3.10.0
 
-# --- DataProcessing ---
-pandas>=2.0.0
-openpyxl>=3.9.0
-python-dotenv>=1.0.0
+# Data processing
+pandas
+openpyxl
+python-dotenv
 
-# --- AWS / Lambda ---
-# boto3 is included above
-
-# --- Testing ---
-pytest>=8.0.0
+# Testing
+pytest

@@ -1,3 +1,4 @@
+import io
 import json
 import os
 
@@ -11,7 +12,7 @@ from src.validators import validate_event
 
 
 def lambda_handler(event, context):
-    """AWS Lambda entry point for processing CSV files from S3 into Snowflake."""
+    """AWS Lambda entry point for S3-triggered CSV ingestion into Snowflake."""
     try:
         payload = validate_event(event)
         bucket = payload["bucket"]
@@ -21,8 +22,8 @@ def lambda_handler(event, context):
         logger.info("Starting ingestion for bucket=%s key=%s table=%s", bucket, key, table_name)
 
         s3 = boto3.client("s3", region_name=os.getenv("AWS_REGION", "us-east-1"))
-        body = s3.get_object(Bucket=bucket, Key=key)["Body"]
-        df = pd.read_csv(body)
+        body = s3.get_object(Bucket=bucket, Key=key)["Body"].read()
+        df = pd.read_csv(io.BytesIO(body))
 
         normalized_df = normalize_dataframe(df)
         rows_loaded = write_dataframe_to_snowflake(normalized_df, table_name)

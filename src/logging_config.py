@@ -1,6 +1,5 @@
-import os
-import json
 import logging
+import os
 
 from dotenv import load_dotenv
 
@@ -8,7 +7,7 @@ load_dotenv()
 
 
 def configure_logging() -> logging.Logger:
-    """Set up a logger that prints to CloudWatch-friendly stdout."""
+    """Configure a simple logger suitable for local runs and Lambda environments."""
     level_name = os.getenv("LOG_LEVEL", "INFO").upper()
     level = getattr(logging, level_name, logging.INFO)
 

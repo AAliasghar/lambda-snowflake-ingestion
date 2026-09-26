@@ -1,5 +1,5 @@
 def validate_event(event: dict) -> dict:
-    """Validate the event payload sent to Lambda."""
+    """Validate Lambda event payload before processing the file."""
     if not isinstance(event, dict):
         raise ValueError("Event payload must be a dictionary")
 

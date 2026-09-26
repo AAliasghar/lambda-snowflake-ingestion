@@ -1,4 +1,3 @@
-import os
 import re
 import unicodedata
 
@@ -6,7 +5,7 @@ import pandas as pd
 
 
 def normalize_column(col_name: str) -> str:
-    """Convert arbitrary column names into Snowflake-safe uppercase identifiers."""
+    """Convert arbitrary names into Snowflake-ready uppercase column names."""
     s = str(col_name)
     s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode("utf-8")
     s = s.replace("(", "").replace(")", "")
@@ -15,7 +14,7 @@ def normalize_column(col_name: str) -> str:
 
 
 def normalize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
-    """Clean dataframe names, preserve values, and remove nulls in a Snowflake-friendly way."""
+    """Clean dataframe column names and null values before writing to Snowflake."""
     if df is None or df.empty:
         raise ValueError("Received empty dataframe for ingestion")
 

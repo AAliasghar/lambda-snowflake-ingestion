@@ -1,360 +1,66 @@
-# Lambda Snowflake Ingestion
+# Lambda + Snowflake ingestion prototype
 
-> **Serverless Data Ingestion Pipeline: AWS Lambda to Snowflake**
+This repository is intended to support a logistics data ingestion workflow using AWS Lambda and Snowflake.
 
-A modern, production-ready serverless data engineering solution for automating the ingestion of **Last Mile Carrier (LMC)** logistics data into **Snowflake** Cloud Data Warehouse. Built with Python, AWS Lambda, and event-driven architecture.
+Current status:
+- The project includes a local ETL prototype for SQL Server testing and validation.
+- The production-facing path is designed for S3-triggered CSV ingestion into Snowflake.
+- The repository is still evolving and should be treated as a working prototype rather than a fully deployed production system.
 
-## 📋 Table of Contents
+## What is included
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Key Features](#key-features)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [Contributing](#contributing)
+- `src/lambda_handler.py` - AWS Lambda entry point
+- `src/snowflake_connector.py` - Snowflake load logic
+- `src/transformations.py` - column normalization and dataframe cleanup
+- `src/validators.py` - event validation
+- `src/logging_config.py` - logging setup
+- `src/ingest_to_sql_server.py` - legacy/local SQL Server helper for local testing
+- `sql/setup_snowflake.sql` - basic Snowflake table creation script
+- `tests/test_lambda_handler.py` - basic validation tests
 
----
+## Architecture
 
-## 📌 Overview
+- Source data is expected in S3
+- Lambda reads the file and validates the event payload
+- Data is cleaned and normalized
+- Data is loaded into Snowflake using the Snowflake connector
+- Credentials can come from environment variables or AWS Secrets Manager
 
-This project replaces legacy, manual ETL processes with a scalable, event-driven serverless architecture. Using AWS Lambda functions written in Python, it automatically processes and loads logistics data into Snowflake with validation, error handling, and cost optimization.
+## Local setup
 
-**Use Cases:**
-- Automated carrier data ingestion from REST APIs
-- File upload processing pipelines
-- Real-time data warehouse synchronization
-- Serverless ETL at scale
+1. Create a virtual environment
+2. Install dependencies:
 
----
-
-## 🏗 Architecture
-
-```
-┌─────────────────────┐
-│  Data Sources       │
-│  • REST API         │
-│  • File Upload      │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  AWS Lambda         │
-│  (Python)           │
-│  • Parsing          │
-│  • Validation       │
-│  • Transformation   │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Snowflake          │
-│  Data Warehouse     │
-│  • OLAP Storage     │
-│  • Analytics Ready  │
-└─────────────────────┘
-
-    Security Layer: AWS Secrets Manager + IAM
-```
-
-### Data Flow
-
-1. **Source:** Logistics data arrives via REST API or file upload
-2. **Trigger:** S3 event or direct Lambda invocation
-3. **Compute:** AWS Lambda parses, validates, and transforms data
-4. **Load:** Data is written to Snowflake staging/production tables
-5. **Governance:** Secrets managed securely, versioned in GitHub
-
----
-
-## 🛠 Tech Stack
-
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **Runtime** | Python 3.x | Lambda function implementation |
-| **Cloud** | AWS Lambda, IAM, S3, Secrets Manager | Serverless compute & secrets |
-| **Database** | Snowflake | OLAP cloud data warehouse |
-| **Libraries** | `snowflake-connector-python`, `boto3`, `pandas` | Core dependencies |
-| **Version Control** | GitHub | Code management & CI/CD ready |
-
----
-
-## 🚀 Key Features
-
-✅ **Serverless Scaling**  
-Automatically scales with incoming data volume—pay only for what you use.
-
-✅ **Data Integrity**  
-Built-in validation logic ensures only high-quality data enters the warehouse.
-
-✅ **Cost Efficiency**  
-Pay-per-execution model significantly reduces costs vs. traditional always-on ETL.
-
-✅ **Modular Design**  
-Decoupled transformation logic for easy maintenance, testing, and debugging.
-
-✅ **Secure Credentials Management**  
-Secrets stored in AWS Secrets Manager, never hardcoded.
-
-✅ **Production Ready**  
-Error handling, logging, and idempotency patterns included.
-
----
-
-## 📂 Project Structure
-
-```
-lambda-snowflake-ingestion/
-├── README.md                      # Project documentation
-├── requirements.txt               # Python dependencies
-├── src/
-│   ├── lambda_function.py         # Core Lambda handler & Snowflake logic
-│   └── ...                        # Additional modules (validation, transformations)
-├── sql/
-│   ├── setup_snowflake.sql        # Table & file format setup scripts
-│   └── ...                        # Additional SQL migrations
-├── scripts/
-│   └── ...                        # Helper scripts for deployment/testing
-├── datasets/
-│   └── ...                        # Sample data for testing
-└── .env.example                   # Environment variables template
-
-```
-
-### Key Files
-
-| File | Purpose |
-|------|---------|
-| `src/lambda_function.py` | Lambda handler, Snowflake connection, data loading logic |
-| `sql/setup_snowflake.sql` | DDL for tables, file formats, and staging areas |
-| `requirements.txt` | Python dependencies |
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- **AWS Account** with Lambda, IAM, and Secrets Manager access
-- **Python 3.9+** (for local development)
-- **Snowflake Account** with database/schema access
-- **Git** for version control
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/AAliasghar/lambda-snowflake-ingestion.git
-   cd lambda-snowflake-ingestion
-   ```
-
-2. **Install dependencies locally** (for development)
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Create environment file**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your Snowflake credentials and AWS details
-   ```
-
----
-
-## ⚙️ Configuration
-
-### Environment Variables
-
-Set these in AWS Secrets Manager or Lambda environment variables:
-
-```env
-# Snowflake
-SNOWFLAKE_ACCOUNT=your_account.region
-SNOWFLAKE_USER=your_user
-SNOWFLAKE_PASSWORD=your_password  # Use Secrets Manager in production
-SNOWFLAKE_DATABASE=your_database
-SNOWFLAKE_SCHEMA=your_schema
-SNOWFLAKE_WAREHOUSE=your_warehouse
-
-# AWS
-AWS_REGION=us-east-1
-AWS_S3_BUCKET=your-data-bucket
-```
-
-### AWS Secrets Manager
-
-Store sensitive credentials:
 ```bash
-aws secretsmanager create-secret \
-  --name snowflake/prod \
-  --secret-string '{
-    "account": "...",
-    "user": "...",
-    "password": "..."
-  }'
+pip install -r requirements.txt
 ```
 
-### Snowflake Setup
+3. Copy the environment template:
 
-Run the SQL setup script in your Snowflake instance:
-```sql
--- Execute sql/setup_snowflake.sql
--- This creates:
--- - Target tables for carrier data
--- - File formats for staged data
--- - Staging areas
+```bash
+cp .env.example .env
 ```
 
----
+4. Edit `.env` with your Snowflake/AWS settings.
 
-## 💻 Usage
+## Sample Lambda event
 
-### Local Testing
-
-```python
-from src.lambda_function import lambda_handler
-
-# Test event
-event = {
-    "source": "s3",
-    "bucket": "my-bucket",
-    "key": "carrier_data.csv"
+```json
+{
+  "bucket": "example-bucket",
+  "key": "carrier_data.csv",
+  "table_name": "LMC_RAW_DATA"
 }
-
-context = {}  # Mock Lambda context
-response = lambda_handler(event, context)
-print(response)
 ```
 
-### Deploy to AWS
+## Limitation
 
-```bash
-# Package Lambda function
-zip -r lambda_package.zip src/ requirements.txt
+This repository is not yet a fully production-hardened deployment. It is meant to provide a clean starting point for event-driven ingestion into Snowflake with validation and modular code structure.
 
-# Upload to AWS Lambda
-aws lambda update-function-code \
-  --function-name my-snowflake-ingestion \
-  --zip-file fileb://lambda_package.zip
-```
+## Planned next steps
 
-### Trigger Patterns
-
-- **S3 Event:** File upload automatically triggers Lambda
-- **API Gateway:** REST endpoint invokes function with custom payload
-- **CloudWatch Events:** Scheduled triggers for batch ingestion
-- **SQS:** Process data from message queues
-
----
-
-## 📊 Monitoring & Logging
-
-Lambda automatically logs to CloudWatch. View logs:
-
-```bash
-aws logs tail /aws/lambda/my-snowflake-ingestion --follow
-```
-
-Key metrics to monitor:
-- **Duration:** Function execution time
-- **Errors:** Failed ingestions
-- **Throttles:** Rate limit issues
-- **Cost:** Execution count × price tier
-
----
-
-## 🔐 Security Best Practices
-
-✅ **Secrets Management:** Use AWS Secrets Manager, not hardcoded credentials  
-✅ **IAM Roles:** Principle of least privilege for Lambda execution role  
-✅ **VPC:** Consider VPC deployment for Snowflake access (if on-premises)  
-✅ **Encryption:** Enable S3 encryption, Snowflake object versioning  
-✅ **Audit Logging:** Enable CloudTrail for Lambda invocations  
-
----
-
-## 🧪 Testing
-
-Run unit tests:
-```bash
-pytest tests/
-```
-
-Test with sample data:
-```bash
-python scripts/test_with_sample_data.py
-```
-
----
-
-## 📝 Development Workflow
-
-1. Create a feature branch
-   ```bash
-   git checkout -b feature/your-feature
-   ```
-
-2. Make changes and test locally
-
-3. Commit with clear messages
-   ```bash
-   git commit -m "feat: add data validation for carrier records"
-   ```
-
-4. Push and create a pull request
-   ```bash
-   git push origin feature/your-feature
-   ```
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Code Style
-
-- Follow PEP 8 guidelines
-- Use type hints for functions
-- Write docstrings for modules and functions
-- Keep functions focused and testable
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License. See `LICENSE` file for details.
-
----
-
-## 📞 Support & Questions
-
-- **Issues:** [GitHub Issues](https://github.com/AAliasghar/lambda-snowflake-ingestion/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/AAliasghar/lambda-snowflake-ingestion/discussions)
-- **Author:** [@AAliasghar](https://github.com/AAliasghar)
-
----
-
-## 🗺️ Roadmap
-
-- [ ] Add comprehensive unit tests and CI/CD pipeline
-- [ ] Implement Snowflake stored procedures for complex transformations
-- [ ] Add support for multiple file formats (JSON, Parquet, CSV)
-- [ ] Create CloudFormation templates for infrastructure as code
-- [ ] Add performance benchmarking and cost optimization guides
-- [ ] Expand error handling and retry mechanisms
-
----
-
-**Last Updated:** June 2026  
-**Status:** Active Development
-
-_Note: This repository contains code from live modernization projects. Sensitive data and credentials have been removed._
+- add stronger validation rules
+- add staging and archive patterns for S3 objects
+- add automated CI checks
+- add deployment infrastructure for Lambda and IAM
+- add more comprehensive Snowflake schema definitions

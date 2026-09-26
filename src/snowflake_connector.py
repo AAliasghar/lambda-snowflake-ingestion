@@ -1,5 +1,5 @@
-import os
 import json
+import os
 
 import boto3
 from dotenv import load_dotenv
@@ -12,7 +12,7 @@ load_dotenv()
 
 
 def get_snowflake_credentials() -> dict:
-    """Return Snowflake credentials from env vars or AWS Secrets Manager."""
+    """Return credentials from environment variables or AWS Secrets Manager."""
     account = os.getenv("SNOWFLAKE_ACCOUNT")
     user = os.getenv("SNOWFLAKE_USER")
     password = os.getenv("SNOWFLAKE_PASSWORD")
@@ -38,9 +38,9 @@ def get_snowflake_credentials() -> dict:
 
 
 def get_snowflake_connection():
-    """Open a Snowflake connection."""
+    """Open and return a Snowflake connection."""
     creds = get_snowflake_credentials()
-    conn = connect(
+    return connect(
         account=creds["account"],
         user=creds["user"],
         password=creds["password"],
@@ -48,12 +48,10 @@ def get_snowflake_connection():
         schema=creds["schema"],
         warehouse=creds["warehouse"],
     )
-    logger.info("Connected to Snowflake warehouse %s", creds.get("warehouse"))
-    return conn
 
 
 def write_dataframe_to_snowflake(df, table_name: str) -> int:
-    """Write a pandas dataframe to a Snowflake table and return rows loaded."""
+    """Load a pandas dataframe into Snowflake and return rows inserted."""
     if not table_name:
         raise ValueError("Target Snowflake table name is required")
 
@@ -69,7 +67,7 @@ def write_dataframe_to_snowflake(df, table_name: str) -> int:
             auto_create_table=False,
             overwrite=False,
         )
-        logger.info("Successfully loaded %s rows to Snowflake table %s", len(df), table_name)
+        logger.info("Successfully loaded %s rows to table %s", len(df), table_name)
         return len(df)
     finally:
         conn.close()

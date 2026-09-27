@@ -26,6 +26,7 @@ A lightweight, modular Python project for processing CSV files from AWS S3 and l
 This repository provides a clean, event-driven ingestion pipeline for moving CSV data from S3 into Snowflake via AWS Lambda. The project is structured as a **working prototype** — it is modular, testable, and ready for local development, but not yet hardened for high-volume production environments.
 
 **Current capabilities:**
+
 - ✅ S3 event-triggered ingestion
 - ✅ CSV parsing and validation
 - ✅ Column name normalization
@@ -35,6 +36,7 @@ This repository provides a clean, event-driven ingestion pipeline for moving CSV
 - ✅ Basic unit tests
 
 **Not yet included:**
+
 - ❌ Dead-letter queues or retry logic
 - ❌ Schema inference or auto-creation
 - ❌ Partitioning or staging strategies
@@ -66,29 +68,33 @@ This repository provides a clean, event-driven ingestion pipeline for moving CSV
                │ Snowflake connector
                ▼
 ┌──────────────────────────────┐
-│     Snowflake               │
-│   (Cloud Data Warehouse)    │
+│     Snowflake                │
+│   (Cloud Data Warehouse)     │
 │                              │
-│  • Raw data tables          │
-│  • Transform/aggregate      │
-│  • Analytics queries        │
+│  • Raw data tables           │
+│  • Transform/aggregate       │
+│  • Analytics queries         │
 └──────────────────────────────┘
 
     Security: AWS Secrets Manager + IAM roles
     Logging: CloudWatch Logs
 ```
 
+### Diagram
+
+![Diagram](diagram.png)
+
 ### Components
 
-| Component | Purpose |
-|-----------|---------|
-| **src/lambda_handler.py** | Main Lambda entry point; orchestrates the pipeline |
-| **src/snowflake_connector.py** | Manages Snowflake credentials and bulk loading |
-| **src/transformations.py** | Column normalization and data cleaning |
-| **src/validators.py** | Event payload validation |
-| **src/logging_config.py** | Structured logging setup |
-| **sql/setup_snowflake.sql** | DDL for target tables and schemas |
-| **tests/** | Unit tests for validation and transformation logic |
+| Component                      | Purpose                                            |
+| ------------------------------ | -------------------------------------------------- |
+| **src/lambda_handler.py**      | Main Lambda entry point; orchestrates the pipeline |
+| **src/snowflake_connector.py** | Manages Snowflake credentials and bulk loading     |
+| **src/transformations.py**     | Column normalization and data cleaning             |
+| **src/validators.py**          | Event payload validation                           |
+| **src/logging_config.py**      | Structured logging setup                           |
+| **sql/setup_snowflake.sql**    | DDL for target tables and schemas                  |
+| **tests/**                     | Unit tests for validation and transformation logic |
 
 ---
 
@@ -134,17 +140,17 @@ This repository provides a clean, event-driven ingestion pipeline for moving CSV
 
 ## 🛠 Tech Stack
 
-| Layer | Technology | Version | Purpose |
-|-------|-----------|---------|---------|
-| **Runtime** | Python | 3.9+ | Lambda function language |
-| **Cloud** | AWS Lambda | latest | Serverless compute |
-| **Cloud** | AWS S3 | latest | Object storage |
-| **Cloud** | AWS Secrets Manager | latest | Credential management |
-| **Data** | Snowflake | any | Cloud data warehouse |
-| **Libraries** | pandas | 2.0+ | Data manipulation |
-| **Libraries** | snowflake-connector-python | 3.10+ | Snowflake connectivity |
-| **Libraries** | boto3 | 1.34+ | AWS SDK |
-| **Testing** | pytest | 8.0+ | Unit testing |
+| Layer         | Technology                 | Version | Purpose                  |
+| ------------- | -------------------------- | ------- | ------------------------ |
+| **Runtime**   | Python                     | 3.9+    | Lambda function language |
+| **Cloud**     | AWS Lambda                 | latest  | Serverless compute       |
+| **Cloud**     | AWS S3                     | latest  | Object storage           |
+| **Cloud**     | AWS Secrets Manager        | latest  | Credential management    |
+| **Data**      | Snowflake                  | any     | Cloud data warehouse     |
+| **Libraries** | pandas                     | 2.0+    | Data manipulation        |
+| **Libraries** | snowflake-connector-python | 3.10+   | Snowflake connectivity   |
+| **Libraries** | boto3                      | 1.34+   | AWS SDK                  |
+| **Testing**   | pytest                     | 8.0+    | Unit testing             |
 
 ---
 
@@ -272,6 +278,7 @@ cat response.json
 ### Expected Response
 
 **Success:**
+
 ```json
 {
   "statusCode": 200,
@@ -280,6 +287,7 @@ cat response.json
 ```
 
 **Error:**
+
 ```json
 {
   "statusCode": 500,

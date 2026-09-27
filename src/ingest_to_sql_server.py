@@ -1,3 +1,19 @@
+"""
+SQL Server Ingestion Module for Local ETL Pipeline
+
+This module handles local data extraction from CSV/Excel files, transformation,
+and loading into SQL Server database. Includes mock data generation for testing
+and support for both outbound and inbound carrier data.
+
+Functions:
+    1. generate_random_date - Generate random dates within a specified month
+    2. create_mock_data - Create sample outbound and inbound CSV files
+    3. get_sql_server_connection - Establish connection to local SQL Server instance
+    4. read_local_files - Read and parse local CSV/Excel files from input folder
+    5. normalize_column - Normalize column names to SQL Server compatible format
+    6. load_to_sql_server - Insert dataframe data into SQL Server table
+"""
+
 import os
 import datetime
 import pandas as pd
@@ -18,10 +34,12 @@ from datetime import datetime
 # 
 OUTPUT_PATH = r"C:\Users\Documents\Data_Engineering\projects\lambda-snowflake-ingestion\datasets\source_lmc"
 
+# 1. generate_random_date
 def generate_random_date(month="2025-06"):
     start = datetime.strptime(f"{month}-01", "%Y-%m-%d")
     return (start + timedelta(days=random.randint(0, 28))).strftime("%Y-%m-%d")
 
+# 2. create_mock_data
 def create_mock_data():
     if not os.path.exists(OUTPUT_PATH):
         os.makedirs(OUTPUT_PATH)
@@ -75,6 +93,8 @@ def create_mock_data():
     print(f"✅ Generated: {inbound_file}")
 
 # --- LOCAL CONFIGURATION ---
+
+# 2. create_mock_data
 DB_CONFIG = {
     "server": "LAPTOP-1V6T0S6A\SQLEXPRESS", 
     "database": "CarrierWarehouse",
@@ -87,6 +107,8 @@ LOCAL_SQL_FOLDER = "./sql_queries"   # Put your .sql files here
 
 
 # --- SQL SERVER CONNECTION ---
+
+# 3. get_sql_server_connection
 def get_sql_server_connection():
     """Establishes connection to local SSMS with status feedback."""
     conn_str = (
@@ -114,6 +136,8 @@ def get_sql_server_connection():
     
 
 # --- LOCAL FILE READING & SQL EXECUTION ---
+
+# 4. read_local_files
 def read_local_files():
     """Replaces Google Drive logic. Reads files from a local folder."""
     dfs = {}
@@ -160,6 +184,8 @@ def read_local_files():
     return dfs
 
 # --- DATA CLEANING & NORMALIZATION ---
+
+# 5. normalize_column
 def normalize_column(col_name: str) -> str:
     """Your professional normalization logic kept intact."""
     s = str(col_name)
@@ -171,6 +197,8 @@ def normalize_column(col_name: str) -> str:
 
 
 # --- SQL SERVER LOADING & POST-LOAD LOGIC ---
+
+# 6. load_to_sql_server
 def load_to_sql_server(df, table_name):
     """Replaces Snowflake write_pandas with SQL Server insertion."""
     if df.empty: return

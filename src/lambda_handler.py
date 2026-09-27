@@ -1,3 +1,15 @@
+"""
+Lambda Handler Module for S3-to-Snowflake CSV Ingestion
+
+This module provides AWS Lambda handlers for processing CSV files uploaded to S3
+and ingesting them into Snowflake. It includes event parsing, data validation,
+transformation, and loading functionality.
+
+Functions:
+    1. _extract_s3_event_details - Parse S3 event details from Lambda event payload
+    2. lambda_handler - AWS Lambda entry point for S3-triggered ingestion
+"""
+
 import io
 import json
 import os
@@ -11,6 +23,7 @@ from src.transformations import normalize_dataframe
 from src.validators import validate_event
 
 
+# 1. _extract_s3_event_details
 def _extract_s3_event_details(event: dict) -> dict:
     """Support both direct event payloads and AWS S3 event records."""
     if "Records" in event:
@@ -38,6 +51,7 @@ def _extract_s3_event_details(event: dict) -> dict:
     }
 
 
+# 2. lambda_handler
 def lambda_handler(event, context):
     """AWS Lambda entry point for S3-triggered CSV ingestion into Snowflake."""
     try:

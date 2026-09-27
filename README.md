@@ -82,6 +82,7 @@ This repository provides a clean, event-driven ingestion pipeline for moving CSV
 
 ### Diagram
 
+```mermaid
 flowchart TD
 
 subgraph group_ingestion["S3 Ingestion"]
@@ -146,7 +147,7 @@ class node_loader,node_tableddl,node_bronzedll,node_s3,node_secrets,node_warehou
 class node_logging toneMint
 class node_localfiles toneRose
 class node_uploader,node_localuser toneIndigo
-
+```
 ### Components
 
 | Component                      | Purpose                                            |

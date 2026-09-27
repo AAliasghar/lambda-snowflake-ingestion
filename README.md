@@ -82,7 +82,70 @@ This repository provides a clean, event-driven ingestion pipeline for moving CSV
 
 ### Diagram
 
-![Diagram](diagram.png)
+flowchart TD
+
+subgraph group_ingestion["S3 Ingestion"]
+  node_lambda["Lambda Handler<br/>[lambda_handler.py]"]
+  node_csv["CSV Parsing<br/>[lambda_handler.py]"]
+  node_transform["Normalization<br/>[transformations.py]"]
+end
+
+subgraph group_snowflake["Snowflake Loading"]
+  node_loader["Snowflake Loader"]
+  node_tableddl["Snowflake Table DDL"]
+  node_bronzedll["Bronze DDL<br/>[ddl_bronze.sql]"]
+end
+
+subgraph group_support["Runtime Support"]
+  node_logging["Structured Logging<br/>[logging_config.py]"]
+end
+
+subgraph group_legacy["Legacy Local ETL"]
+  node_localfiles["Local File ETL"]
+end
+
+node_uploader(("File Uploader"))
+node_s3[("S3 Bucket")]
+node_secrets[("Secrets Manager")]
+node_warehouse[("Snowflake Warehouse")]
+node_localuser(("Local Operator"))
+node_sqlserver[("SQL Server")]
+
+node_uploader -->|"uploads CSV"| node_s3
+node_s3 -->|"triggers invocation"| node_lambda
+node_lambda -->|"downloads object"| node_s3
+node_lambda -->|"parses CSV"| node_csv
+node_lambda -->|"normalizes data"| node_transform
+node_lambda -->|"loads dataframe"| node_loader
+node_loader -.->|"fetches credentials"| node_secrets
+node_loader -->|"bulk loads"| node_warehouse
+node_lambda -->|"logs events"| node_logging
+node_tableddl -->|"defines tables"| node_warehouse
+node_bronzedll -.->|"defines bronze tables"| node_sqlserver
+node_localuser -->|"runs ETL"| node_localfiles
+node_localfiles -->|"inserts rows"| node_sqlserver
+
+click node_lambda "https://github.com/aaliasghar/lambda-snowflake-ingestion/blob/main/src/lambda_handler.py"
+click node_csv "https://github.com/aaliasghar/lambda-snowflake-ingestion/blob/main/src/lambda_handler.py"
+click node_transform "https://github.com/aaliasghar/lambda-snowflake-ingestion/blob/main/src/transformations.py"
+click node_loader "https://github.com/aaliasghar/lambda-snowflake-ingestion/blob/main/src/snowflake_connector.py"
+click node_logging "https://github.com/aaliasghar/lambda-snowflake-ingestion/blob/main/src/logging_config.py"
+click node_tableddl "https://github.com/aaliasghar/lambda-snowflake-ingestion/blob/main/sql/setup_snowflake.sql"
+click node_bronzedll "https://github.com/aaliasghar/lambda-snowflake-ingestion/blob/main/scripts/bronze/ddl_bronze.sql"
+click node_localfiles "https://github.com/aaliasghar/lambda-snowflake-ingestion/blob/main/src/ingest_to_sql_server.py"
+
+classDef toneNeutral fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a
+classDef toneBlue fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#172554
+classDef toneAmber fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#78350f
+classDef toneMint fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
+classDef toneRose fill:#ffe4e6,stroke:#e11d48,stroke-width:1.5px,color:#881337
+classDef toneIndigo fill:#e0e7ff,stroke:#4f46e5,stroke-width:1.5px,color:#312e81
+classDef toneTeal fill:#ccfbf1,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
+class node_lambda,node_csv,node_transform toneBlue
+class node_loader,node_tableddl,node_bronzedll,node_s3,node_secrets,node_warehouse,node_sqlserver toneAmber
+class node_logging toneMint
+class node_localfiles toneRose
+class node_uploader,node_localuser toneIndigo
 
 ### Components
 

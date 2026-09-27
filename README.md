@@ -85,23 +85,23 @@ This repository provides a clean, event-driven ingestion pipeline for moving CSV
 flowchart TD
 
 subgraph group_ingestion["S3 Ingestion"]
-  node_lambda["Lambda Handler<br/>[lambda_handler.py]"]
-  node_csv["CSV Parsing<br/>[lambda_handler.py]"]
-  node_transform["Normalization<br/>[transformations.py]"]
+node_lambda["Lambda Handler<br/>[lambda_handler.py]"]
+node_csv["CSV Parsing<br/>[lambda_handler.py]"]
+node_transform["Normalization<br/>[transformations.py]"]
 end
 
 subgraph group_snowflake["Snowflake Loading"]
-  node_loader["Snowflake Loader"]
-  node_tableddl["Snowflake Table DDL"]
-  node_bronzedll["Bronze DDL<br/>[ddl_bronze.sql]"]
+node_loader["Snowflake Loader"]
+node_tableddl["Snowflake Table DDL"]
+node_bronzedll["Bronze DDL<br/>[ddl_bronze.sql]"]
 end
 
 subgraph group_support["Runtime Support"]
-  node_logging["Structured Logging<br/>[logging_config.py]"]
+node_logging["Structured Logging<br/>[logging_config.py]"]
 end
 
 subgraph group_legacy["Legacy Local ETL"]
-  node_localfiles["Local File ETL"]
+node_localfiles["Local File ETL"]
 end
 
 node_uploader(("File Uploader"))

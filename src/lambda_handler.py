@@ -13,6 +13,7 @@ Functions:
 import io
 import json
 import os
+from urllib.parse import unquote_plus
 
 import boto3
 import pandas as pd
@@ -25,30 +26,27 @@ from src.validators import validate_event
 
 # 1. _extract_s3_event_details
 def _extract_s3_event_details(event: dict) -> dict:
-    """Support both direct event payloads and AWS S3 event records."""
-    if "Records" in event:
-        record = event["Records"][0]
-        bucket = record["s3"]["bucket"]["name"]
-        key = record["s3"]["object"]["key"]
-    else:
-        bucket = event.get("bucket") or event.get("Bucket")
-        key = event.get("key") or event.get("Key")
+    """Support both direct event payloads and AWS S3 event records.
 
-    if not bucket or not key:
-        raise ValueError("Missing S3 bucket or object key in event payload")
+    S3 notifications have no table name, so for those the table comes from
+    the event (if a caller added one) or the DEFAULT_TABLE_NAME env var.
+    """
+    if isinstance(event, dict) and "Records" in event:
+        try:
+            s3_info = event["Records"][0]["s3"]
+            bucket = s3_info["bucket"]["name"]
+            # S3 URL-encodes object keys in events ("my file.csv" -> "my+file.csv").
+            key = unquote_plus(s3_info["object"]["key"])
+        except (KeyError, IndexError, TypeError) as exc:
+            raise ValueError("Malformed S3 event record") from exc
 
-    table_name = event.get("table_name") or event.get("table") or event.get("TABLE_NAME")
-    if not table_name:
-        if "Records" in event:
-            table_name = event.get("table_name") or os.getenv("DEFAULT_TABLE_NAME")
-        if not table_name:
-            raise ValueError("Missing target Snowflake table name in event payload")
+        event = {
+            "bucket": bucket,
+            "key": key,
+            "table_name": event.get("table_name") or os.getenv("DEFAULT_TABLE_NAME"),
+        }
 
-    return {
-        "bucket": bucket,
-        "key": key,
-        "table_name": table_name,
-    }
+    return validate_event(event)
 
 
 # 2. lambda_handler

@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+.venv/
+
+# Secrets: never commit real credentials (.env.example is the template)
+.env
+
+# Build output
+lambda_package.zip
+*.egg-info/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

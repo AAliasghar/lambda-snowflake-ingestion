@@ -15,24 +15,21 @@ Functions:
 """
 
 import os
-import datetime
+import random
+import re
+import sys
+import unicodedata
+from datetime import datetime, timedelta
+from pathlib import Path
+
 import pandas as pd
 import pyodbc
-import re
-import unicodedata
-import urllib  
-from sqlalchemy import create_engine
-from tabulate import tabulate
-import sys
-import random
-import os
-from datetime import datetime, timedelta
-from datetime import datetime
 
 
-
-# 
-OUTPUT_PATH = r"C:\Users\Documents\Data_Engineering\projects\lambda-snowflake-ingestion\datasets\source_lmc"
+# Folder for the mock CSVs, and where read_local_files() looks for input.
+# Defaults to datasets/source_lmc inside this repo; override with LMC_SOURCE_DIR.
+REPO_ROOT = Path(__file__).resolve().parent.parent
+OUTPUT_PATH = os.getenv("LMC_SOURCE_DIR", str(REPO_ROOT / "datasets" / "source_lmc"))
 
 # 1. generate_random_date
 def generate_random_date(month="2025-06"):
@@ -96,12 +93,12 @@ def create_mock_data():
 
 # 2. create_mock_data
 DB_CONFIG = {
-    "server": "LAPTOP-1V6T0S6A\SQLEXPRESS", 
-    "database": "CarrierWarehouse",
-    "driver": "ODBC Driver 17 for SQL Server" 
+    "server": os.getenv("SQLSERVER_HOST", r"localhost\SQLEXPRESS"),
+    "database": os.getenv("SQLSERVER_DATABASE", "CarrierWarehouse"),
+    "driver": os.getenv("SQLSERVER_DRIVER", "ODBC Driver 17 for SQL Server"),
 }
 
-LOCAL_INPUT_FOLDER = r"C:\Users\Documents\Data_Engineering\projects\lambda-snowflake-ingestion\datasets\source_lmc" # Put your Excel/CSV files here
+LOCAL_INPUT_FOLDER = OUTPUT_PATH  # Put your Excel/CSV files here
 LOCAL_SQL_FOLDER = "./sql_queries"   # Put your .sql files here
 
 
@@ -130,7 +127,7 @@ def get_sql_server_connection():
         
     except Exception as e:
         # If it fails, we want to know exactly why (wrong driver? wrong DB name?)
-        print(f"❌ CONNECTION FAILED: Could not connect to SQL Server.")
+        print("❌ CONNECTION FAILED: Could not connect to SQL Server.")
         print(f"Error Details: {e}")
         return None
     

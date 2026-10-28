@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Optional
 
 import boto3
 from dotenv import load_dotenv
@@ -71,9 +72,10 @@ def get_snowflake_credentials() -> dict:
     }
 
 
-def get_snowflake_connection():
+def get_snowflake_connection(creds: Optional[dict] = None):
     """Open and return a Snowflake connection."""
-    creds = get_snowflake_credentials()
+    if creds is None:
+        creds = get_snowflake_credentials()
     return connect(
         account=creds["account"],
         user=creds["user"],
@@ -92,19 +94,23 @@ def write_dataframe_to_snowflake(df, table_name: str) -> int:
     if df is None or df.empty:
         raise ValueError("DataFrame is empty; cannot write to Snowflake")
 
-    conn = get_snowflake_connection()
+    # Fetch credentials once: on the Secrets Manager path every call is an AWS API call.
+    creds = get_snowflake_credentials()
+    conn = get_snowflake_connection(creds)
     try:
-        write_pandas(
+        success, _num_chunks, num_rows, _output = write_pandas(
             conn,
             df,
             table_name=table_name,
-            database=os.getenv("SNOWFLAKE_DATABASE") or get_snowflake_credentials()["database"],
-            schema=os.getenv("SNOWFLAKE_SCHEMA") or get_snowflake_credentials()["schema"],
+            database=creds["database"],
+            schema=creds["schema"],
             quote_identifiers=False,
             auto_create_table=False,
             overwrite=False,
         )
-        logger.info("Successfully loaded %s rows to table %s", len(df), table_name)
-        return len(df)
+        if not success:
+            raise RuntimeError(f"write_pandas reported failure loading table {table_name}")
+        logger.info("Successfully loaded %s rows to table %s", num_rows, table_name)
+        return num_rows
     finally:
         conn.close()

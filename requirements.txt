@@ -1,15 +1,7 @@
-# Local ETL legacy helper
-pyodbc
-sqlalchemy
-
-# AWS / Snowflake / Lambda
+# Runtime dependencies: what the Lambda function imports.
+# Keep this lean: it is what gets packaged and deployed.
 boto3
 snowflake-connector-python>=3.10.0
-
-# Data processing
 pandas
 openpyxl
 python-dotenv
-
-# Testing
-pytest

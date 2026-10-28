@@ -223,7 +223,10 @@ class node_uploader,node_localuser toneIndigo
 ```
 lambda-snowflake-ingestion/
 ├── README.md                          # This file
-├── requirements.txt                   # Python dependencies
+├── requirements.txt                   # Runtime dependencies (what the Lambda imports)
+├── requirements-dev.txt               # + pytest and the legacy SQL Server helper's deps
+├── pyproject.toml                     # pytest configuration
+├── LICENSE                            # MIT
 ├── .env.example                       # Environment variables template
 │
 ├── src/
@@ -239,10 +242,12 @@ lambda-snowflake-ingestion/
 │   └── setup_snowflake.sql            # Table creation DDL
 │
 ├── tests/
-│   └── test_lambda_handler.py         # Basic Lambda tests
+│   ├── test_lambda_handler.py         # Handler and event-parsing tests
+│   └── test_snowflake_connector.py    # Credential and load tests (Snowflake mocked)
 │
 └── .github/
-    └── workflows/                     # (Planned) CI/CD pipelines
+    └── workflows/
+        └── ci.yml                     # Runs the tests on Python 3.10 and 3.11
 ```
 
 ---
@@ -275,8 +280,10 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 3. **Install dependencies**
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-dev.txt   # local development and tests
 ```
+
+`requirements.txt` holds only what the Lambda function imports, so the deployed package stays small. `requirements-dev.txt` adds pytest and `pyodbc` for the legacy SQL Server helper; on Linux, `pyodbc` needs the unixODBC system library (`sudo apt-get install unixodbc-dev`).
 
 4. **Set up environment variables**
 
@@ -292,7 +299,7 @@ cp .env.example .env
 ### Running Tests
 
 ```bash
-pytest tests/ -v
+pytest -v
 ```
 
 ### Testing the Lambda Handler Locally

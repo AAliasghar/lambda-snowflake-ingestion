@@ -1,0 +1,10 @@
+# Local development, tests and the legacy SQL Server helper.
+# Not needed by the Lambda function.
+-r requirements.txt
+
+# Legacy local ETL helper (src/ingest_to_sql_server.py)
+# pyodbc needs the unixODBC system library on Linux (apt: unixodbc-dev).
+pyodbc
+
+# Testing
+pytest>=8.0

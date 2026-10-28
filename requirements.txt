@@ -1,7 +1,8 @@
 # Runtime dependencies: what the Lambda function imports.
 # Keep this lean: it is what gets packaged and deployed.
 boto3
-snowflake-connector-python>=3.10.0
+# [pandas] extra installs pyarrow, which write_pandas needs to upload data.
+snowflake-connector-python[pandas]>=3.10.0
 pandas
 openpyxl
 python-dotenv

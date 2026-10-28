@@ -421,11 +421,22 @@ aws secretsmanager create-secret \
 
 ### Package the function
 
+The zip must contain the installed libraries, not just `requirements.txt`. Build them for Lambda's Linux runtime (this works from Windows too):
+
 ```bash
-zip -r lambda_package.zip src/ requirements.txt
+rm -rf package lambda_package.zip
+pip install -r requirements.txt --target package \
+  --platform manylinux2014_x86_64 --implementation cp \
+  --python-version 3.11 --only-binary=:all:
+cp -r src package/
+python -c "import shutil; shutil.make_archive('lambda_package', 'zip', 'package')"
 ```
 
+> **Size limits:** Lambda accepts a zip up to 50 MB by direct upload and 250 MB unzipped. pandas + pyarrow + the Snowflake connector come close to that. If the zip is over 50 MB, upload it to S3 and deploy with `--s3-bucket` / `--s3-key` instead of `--zip-file`. If it is over 250 MB unzipped, deploy as a container image instead.
+
 ### Deploy to AWS
+
+The function must already exist with an execution role that can read the S3 bucket and the Secrets Manager secret.
 
 ```bash
 aws lambda update-function-code \
@@ -433,24 +444,41 @@ aws lambda update-function-code \
   --zip-file fileb://lambda_package.zip
 ```
 
-### Set environment variables in Lambda
+### Set the handler, runtime and environment variables
 
 ```bash
 aws lambda update-function-configuration \
   --function-name my-snowflake-ingestion \
-  --environment Variables="{SNOWFLAKE_ACCOUNT=xy12345.us-east-1,SNOWFLAKE_USER=my_user,AWS_REGION=us-east-1}"
+  --runtime python3.11 \
+  --handler src.lambda_handler.lambda_handler \
+  --timeout 120 --memory-size 1024 \
+  --environment "Variables={DEFAULT_TABLE_NAME=LMC_RAW_DATA,SNOWFLAKE_SECRET_NAME=snowflake/prod,LOG_LEVEL=INFO}"
 ```
+
+- `DEFAULT_TABLE_NAME` is required for S3 triggers: S3 events carry no table name.
+- Snowflake credentials come from the Secrets Manager secret (JSON with `account`, `user`, `password`, `database`, `schema`, `warehouse`). Don't put the password in plain environment variables.
+- Don't set `AWS_REGION`: Lambda sets it itself and rejects it as a reserved key.
 
 ### Configure S3 trigger
 
+First allow S3 to invoke the function, then add the bucket notification:
+
 ```bash
+aws lambda add-permission \
+  --function-name my-snowflake-ingestion \
+  --statement-id s3-invoke \
+  --action lambda:InvokeFunction \
+  --principal s3.amazonaws.com \
+  --source-arn arn:aws:s3:::my-data-bucket \
+  --source-account ACCOUNT_ID
+
 aws s3api put-bucket-notification-configuration \
   --bucket my-data-bucket \
   --notification-configuration '{
     "LambdaFunctionConfigurations": [{
       "LambdaFunctionArn": "arn:aws:lambda:us-east-1:ACCOUNT_ID:function:my-snowflake-ingestion",
       "Events": ["s3:ObjectCreated:*"],
-      "Filter": {"Key": {"FilterRules": [{"Name": "suffix", "Value": "csv"}]}}
+      "Filter": {"Key": {"FilterRules": [{"Name": "suffix", "Value": ".csv"}]}}
     }]
   }'
 ```
@@ -472,9 +500,11 @@ aws s3api put-bucket-notification-configuration \
 {
   "bucket": "carrier-data-prod",
   "key": "2025-06-26/dhl_outbound.csv",
-  "table_name": "ANALYTICS.LMC.LMC_RAW_DATA"
+  "table_name": "LMC_RAW_DATA"
 }
 ```
+
+`table_name` is the table name only; the database and schema come from the Snowflake credentials.
 
 ---
 

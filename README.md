@@ -1,5 +1,9 @@
 # AWS Lambda → Snowflake Data Ingestion
 
+[![CI](https://github.com/AAliasghar/lambda-snowflake-ingestion/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AAliasghar/lambda-snowflake-ingestion/actions/workflows/ci.yml)
+[![Python 3.10 | 3.11](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue)](#-tech-stack)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 > **Event-driven serverless data ingestion from S3 to Snowflake**
 
 A lightweight, modular Python project for processing CSV files from AWS S3 and loading them into Snowflake. Designed as a prototype for Last-Mile Carrier (LMC) logistics data workflows.
@@ -33,7 +37,8 @@ This repository provides a clean, event-driven ingestion pipeline for moving CSV
 - ✅ Snowflake bulk loading
 - ✅ Structured logging for CloudWatch
 - ✅ Environment-based configuration
-- ✅ Basic unit tests
+- ✅ Unit tests for the handler, event parsing and Snowflake loader (AWS and Snowflake mocked)
+- ✅ CI on GitHub Actions: tests run on Python 3.10 and 3.11 for every push and pull request
 
 **Not yet included:**
 
@@ -41,7 +46,7 @@ This repository provides a clean, event-driven ingestion pipeline for moving CSV
 - ❌ Schema inference or auto-creation
 - ❌ Partitioning or staging strategies
 - ❌ Comprehensive error recovery
-- ❌ CI/CD pipeline automation
+- ❌ Automated deployment (CD) to AWS
 
 ---
 
@@ -57,7 +62,7 @@ This repository provides a clean, event-driven ingestion pipeline for moving CSV
                ▼
 ┌──────────────────────────────┐
 │     AWS Lambda               │
-│  (Python 3.9+)               │
+│  (Python 3.10+)              │
 │                              │
 │  • Event validation          │
 │  • CSV parsing               │
@@ -206,7 +211,7 @@ class node_uploader,node_localuser toneIndigo
 
 | Layer         | Technology                 | Version | Purpose                  |
 | ------------- | -------------------------- | ------- | ------------------------ |
-| **Runtime**   | Python                     | 3.9+    | Lambda function language |
+| **Runtime**   | Python                     | 3.10+   | Lambda function language |
 | **Cloud**     | AWS Lambda                 | latest  | Serverless compute       |
 | **Cloud**     | AWS S3                     | latest  | Object storage           |
 | **Cloud**     | AWS Secrets Manager        | latest  | Credential management    |
@@ -256,7 +261,7 @@ lambda-snowflake-ingestion/
 
 ### Prerequisites
 
-- Python 3.9 or later
+- Python 3.10 or later
 - AWS account with Lambda, S3, and Secrets Manager access
 - Snowflake account with database/schema privileges
 - Git
@@ -488,7 +493,8 @@ aws s3api put-bucket-notification-configuration \
 - [ ] Add comprehensive validation rules and error categorization
 - [ ] Add S3 staging and archive patterns
 - [ ] Add dead-letter queue (SQS) for failed files
-- [ ] Add GitHub Actions CI/CD pipeline
+- [x] Add GitHub Actions CI (tests on every push and pull request)
+- [ ] Add automated deployment (CD) to AWS
 - [ ] Add AWS CloudFormation templates for infrastructure as code
 - [ ] Add Snowflake stored procedures for complex transformations
 - [ ] Add performance benchmarking and cost analysis
@@ -503,7 +509,7 @@ Contributions are welcome! Please:
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Make your changes and test locally: `pytest tests/ -v`
+3. Make your changes and test locally: `pytest -v`
 4. Commit with a clear message: `git commit -m "feat: add xyz"`
 5. Push and open a pull request
 

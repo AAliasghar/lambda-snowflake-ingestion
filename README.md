@@ -562,7 +562,7 @@ MIT License. See LICENSE file for details.
 
 - **Issues:** [GitHub Issues](https://github.com/AAliasghar/lambda-snowflake-ingestion/issues)
 - **Discussions:** [GitHub Discussions](https://github.com/AAliasghar/lambda-snowflake-ingestion/discussions)
-- **Author:** [@AAliasghar](https://github.com/AAliasghar)
+- **Author:** Aliasghar Asgharinia ([@AAliasghar](https://github.com/AAliasghar))
 
 ---
 
